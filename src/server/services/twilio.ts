@@ -22,11 +22,14 @@ export async function initiateTwilioCall({
   amdStrategy,
 }: InitiateCallParams) {
   const baseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+  const voiceUrl = `${baseUrl}/api/twilio/voice?callId=${callId}&strategy=${amdStrategy}`;
+  
+  console.log(`Initiating call with voice URL: ${voiceUrl}`);
 
   const callParams: any = {
     to: targetNumber,
     from: twilioNumber,
-    url: `${baseUrl}/api/twilio/voice?callId=${callId}&strategy=${amdStrategy}`,
+    url: voiceUrl,
     statusCallback: `${baseUrl}/api/twilio/status?callId=${callId}`,
     statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
   };
@@ -40,5 +43,7 @@ export async function initiateTwilioCall({
   }
 
   const call = await client.calls.create(callParams);
+  console.log(`Call created: ${call.sid}, status: ${call.status}`);
+  console.log(`Call will use URL: ${callParams.url}`);
   return call;
 }
