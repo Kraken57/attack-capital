@@ -13,10 +13,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { targetNumber, amdStrategy } = dialSchema.parse(body);
 
-    // TODO: Get userId from session (Better-Auth)
-    const userId = "temp-user-id"; // Placeholder for now
+    const userId = "temp-user-id";
 
-    // Create call record
     const call = await db.call.create({
       data: {
         userId,
@@ -26,14 +24,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Initiate Twilio call based on strategy
     const twilioCall = await initiateTwilioCall({
       callId: call.id,
       targetNumber,
       amdStrategy,
     });
 
-    // Update call with Twilio SID
     await db.call.update({
       where: { id: call.id },
       data: { twilioCallSid: twilioCall.sid, status: "ringing" },

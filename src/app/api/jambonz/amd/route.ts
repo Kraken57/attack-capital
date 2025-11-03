@@ -10,21 +10,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing callId" }, { status: 400 });
     }
 
-    const formData = await req.formData();
-    const amdStatus = formData.get("AnsweredBy") as string;
-    const callSid = formData.get("CallSid") as string;
+    const body = await req.json();
+    const { event, call_sid, amd_result } = body;
+
+    console.log(`Jambonz AMD event: ${event}, result: ${amd_result}`);
 
     let amdResult: string;
-    let confidence = 0.85;
+    let confidence = 0.90; // Jambonz typically has higher accuracy
 
-    switch (amdStatus) {
+    switch (amd_result) {
       case "human":
+      case "amd_human_detected":
         amdResult = "human";
         break;
-      case "machine_start":
-      case "machine_end_beep":
-      case "machine_end_silence":
-      case "machine_end_other":
+      case "machine":
+      case "amd_machine_detected":
         amdResult = "machine";
         break;
       default:
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         confidence = 0.5;
     }
 
+    // Update call record
     await db.call.update({
       where: { id: callId },
       data: {
@@ -39,16 +40,28 @@ export async function POST(req: NextRequest) {
         confidence,
         status: amdResult === "human" ? "answered" : "completed",
         metadata: {
-          twilioAmdStatus: amdStatus,
+          jambonzEvent: event,
+          jambonzCallSid: call_sid,
+          amdResult: amd_result,
         },
       },
     });
 
-    console.log(`AMD Result for ${callSid}: ${amdResult}`);
+    console.log(`Jambonz AMD Result for ${call_sid}: ${amdResult}`);
 
-    return NextResponse.json({ success: true });
+    // Return TwiML response
+    if (amdResult === "human") {
+      return NextResponse.json({
+        verb: "say",
+        text: "Hello! You have been connected.",
+      });
+    } else {
+      return NextResponse.json({
+        verb: "hangup",
+      });
+    }
   } catch (error) {
-    console.error("AMD callback error:", error);
+    console.error("Jambonz AMD callback error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

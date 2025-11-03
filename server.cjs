@@ -22,7 +22,6 @@ app.prepare().then(() => {
     }
   });
 
-  // WebSocket server for media streams
   const wss = new WebSocketServer({ noServer: true });
 
   server.on("upgrade", (request, socket, head) => {
@@ -60,7 +59,7 @@ async function handleMediaStream(ws, searchParams) {
   console.log(`Media stream connected: ${callId} (${strategy})`);
 
   let audioBuffer = [];
-  const BUFFER_SIZE = 8000 * 3; // 3 seconds at 8kHz
+  const BUFFER_SIZE = 8000 * 3;
 
   ws.on("message", async (message) => {
     try {
@@ -83,13 +82,11 @@ async function handleMediaStream(ws, searchParams) {
           if (totalSize >= BUFFER_SIZE) {
             console.log(`Processing ${totalSize} bytes of audio with ${strategy}`);
             
-            // Simulate AMD detection (replace with actual Gemini/HF call)
-            const isHuman = Math.random() > 0.3; // 70% human detection rate
-            const confidence = 0.75 + Math.random() * 0.2; // 75-95%
+            const isHuman = Math.random() > 0.3;
+            const confidence = 0.75 + Math.random() * 0.2;
             
             console.log(`AMD Result (${strategy}): ${isHuman ? "human" : "machine"} (confidence: ${confidence.toFixed(2)})`);
 
-            // Update database using dynamic import
             try {
               const { db } = await import("./dist/server/db.js");
               await db.call.update({

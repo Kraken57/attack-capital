@@ -34,7 +34,6 @@ export async function initiateTwilioCall({
     statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
   };
 
-  // Strategy 1: Twilio Native AMD
   if (amdStrategy === "twilio") {
     callParams.machineDetection = "Enable";
     callParams.machineDetectionTimeout = 5;
