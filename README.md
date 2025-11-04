@@ -527,7 +527,6 @@ await detector.processStream(audioBuffer);
 ## 👤 Author
 
 **Ahmad Saad**  
-Email: ahmad.saad@edulevel.ai  
 Built for: Attack Capital Technical Assignment
 
 ## 📄 License
